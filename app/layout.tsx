@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Xiaohongshu Post Image Export",
-  description: "Extract images from Xiaohongshu posts as ZIP, PDF, or long image.",
+  title: "GrabIt · Save posts from Xiaohongshu, Instagram, TikTok & Facebook",
+  description:
+    "Paste any post link to preview and download photos and videos — no watermark, no login required.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

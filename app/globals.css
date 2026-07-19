@@ -3,9 +3,36 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
+html,
 body {
-  @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+  @apply text-slate-900;
+  background:
+    radial-gradient(1200px 600px at -10% -10%, #ffe4e6 0%, transparent 60%),
+    radial-gradient(1000px 700px at 110% 0%, #fef3c7 0%, transparent 55%),
+    radial-gradient(900px 800px at 50% 110%, #dbeafe 0%, transparent 60%),
+    #fafafa;
+  background-attachment: fixed;
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(90deg, #f43f5e 0%, #f97316 45%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+  }
+  .shadow-soft {
+    box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.15);
+  }
+  .shadow-pop {
+    box-shadow: 0 20px 45px -18px rgba(244, 63, 94, 0.35);
+  }
 }
