@@ -24,6 +24,29 @@ export function decodeUnicode(s: string): string {
     .replace(/&amp;/g, "&");
 }
 
+export function pathKey(u: string): string {
+  try {
+    const p = new URL(u);
+    p.search = "";
+    p.hash = "";
+    return p.toString();
+  } catch {
+    return u;
+  }
+}
+
+export function dedupeByPath(urls: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const u of urls) {
+    const k = pathKey(u);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(u);
+  }
+  return out;
+}
+
 export function normalizeUrl(raw: string): string | null {
   let u = decodeUnicode(raw).trim();
   if (!u) return null;

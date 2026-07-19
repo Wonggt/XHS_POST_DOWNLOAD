@@ -78,6 +78,7 @@ interface TabState {
   url: string;
   images: string[];
   videos: string[];
+  selected: Set<string>;
   status: Status;
   error: string;
   busyKind: BulkKind | null;
@@ -87,6 +88,7 @@ const initialTabState: TabState = {
   url: "",
   images: [],
   videos: [],
+  selected: new Set(),
   status: "idle",
   error: "",
   busyKind: null,
@@ -104,10 +106,10 @@ export default function Home() {
   const [langOpen, setLangOpen] = useState(false);
   const [active, setActive] = useState<Platform>("xhs");
   const [tabs, setTabs] = useState<Record<Platform, TabState>>({
-    xhs: { ...initialTabState },
-    instagram: { ...initialTabState },
-    tiktok: { ...initialTabState },
-    facebook: { ...initialTabState },
+    xhs: { ...initialTabState, selected: new Set() },
+    instagram: { ...initialTabState, selected: new Set() },
+    tiktok: { ...initialTabState, selected: new Set() },
+    facebook: { ...initialTabState, selected: new Set() },
   });
 
   useEffect(() => {
@@ -140,7 +142,13 @@ export default function Home() {
 
   async function handleExtract(e: React.FormEvent) {
     e.preventDefault();
-    update({ status: "extracting", error: "", images: [], videos: [] });
+    update({
+      status: "extracting",
+      error: "",
+      images: [],
+      videos: [],
+      selected: new Set(),
+    });
     try {
       const res = await fetch("/api/extract", {
         method: "POST",
@@ -149,9 +157,11 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to extract");
+      const images: string[] = data.images ?? [];
       update({
-        images: data.images ?? [],
+        images,
         videos: data.videos ?? [],
+        selected: new Set(images),
         status: "ready",
       });
     } catch (err) {
@@ -163,14 +173,15 @@ export default function Home() {
   }
 
   async function handleBulkDownload(kind: BulkKind) {
-    if (!state.images.length) return;
+    const chosen = state.images.filter((i) => state.selected.has(i));
+    if (!chosen.length) return;
     const meta = BULK_META[kind];
     update({ status: "downloading", error: "", busyKind: kind });
     try {
       const res = await fetch(meta.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images: state.images }),
+        body: JSON.stringify({ images: chosen }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -186,6 +197,21 @@ export default function Home() {
         busyKind: null,
       });
     }
+  }
+
+  function toggleSelected(src: string) {
+    const next = new Set(state.selected);
+    if (next.has(src)) next.delete(src);
+    else next.add(src);
+    update({ selected: next });
+  }
+
+  function selectAll() {
+    update({ selected: new Set(state.images) });
+  }
+
+  function clearSelection() {
+    update({ selected: new Set() });
   }
 
   function triggerDownload(blob: Blob, filename: string) {
@@ -423,15 +449,42 @@ export default function Home() {
           {state.images.length > 0 && (
             <div>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <SectionHeader icon="🖼️" title={t.results_images(state.images.length)} inline />
+                <div className="flex items-center gap-3">
+                  <SectionHeader icon="🖼️" title={t.results_images(state.images.length)} inline />
+                  {tabMeta.supportsBulk && (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                      {t.selected_count(state.selected.size, state.images.length)}
+                    </span>
+                  )}
+                </div>
                 {tabMeta.supportsBulk && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={selectAll}
+                      disabled={state.selected.size === state.images.length}
+                      className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-soft ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-40"
+                    >
+                      {t.select_all}
+                    </button>
+                    <button
+                      onClick={clearSelection}
+                      disabled={state.selected.size === 0}
+                      className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-soft ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-40"
+                    >
+                      {t.select_none}
+                    </button>
+                    <span className="mx-1 h-5 w-px bg-slate-200" aria-hidden />
                     {(Object.keys(BULK_META) as BulkKind[]).map((kind) => (
                       <button
                         key={kind}
                         onClick={() => handleBulkDownload(kind)}
-                        disabled={busy}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-soft ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-50"
+                        disabled={busy || state.selected.size === 0}
+                        className={
+                          "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-soft ring-1 transition disabled:opacity-40 " +
+                          (state.selected.size === 0
+                            ? "bg-white text-slate-400 ring-slate-200"
+                            : `bg-gradient-to-br text-white ring-transparent ${tabMeta.accent}`)
+                        }
                       >
                         <span>{BULK_META[kind].icon}</span>
                         {state.busyKind === kind ? t.preparing : t[BULK_META[kind].labelKey]}
@@ -440,13 +493,24 @@ export default function Home() {
                   </div>
                 )}
               </div>
+              {tabMeta.supportsBulk && (
+                <p className="mb-3 text-xs text-slate-500">{t.select_hint}</p>
+              )}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {state.images.map((src, i) => {
                   const filename = `${active}-image-${i + 1}.jpg`;
+                  const isSelected = state.selected.has(src);
                   return (
                     <div
                       key={src + i}
-                      className="group relative aspect-square overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-slate-200"
+                      onClick={() => tabMeta.supportsBulk && toggleSelected(src)}
+                      className={
+                        "group relative aspect-square overflow-hidden rounded-2xl bg-white shadow-soft ring-1 transition " +
+                        (tabMeta.supportsBulk ? "cursor-pointer " : "") +
+                        (isSelected || !tabMeta.supportsBulk
+                          ? "ring-slate-200"
+                          : "opacity-60 ring-slate-200 hover:opacity-80")
+                      }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -458,9 +522,22 @@ export default function Home() {
                       <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-xs font-semibold text-slate-700 shadow-sm">
                         {i + 1}
                       </span>
+                      {tabMeta.supportsBulk && (
+                        <span
+                          className={
+                            "absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full text-xs font-bold shadow-sm ring-2 transition " +
+                            (isSelected
+                              ? `bg-gradient-to-br text-white ring-white ${tabMeta.accent}`
+                              : "bg-white/90 text-transparent ring-white")
+                          }
+                        >
+                          ✓
+                        </span>
+                      )}
                       <a
                         href={proxied(src, true, filename)}
                         download={filename}
+                        onClick={(e) => e.stopPropagation()}
                         className={
                           "absolute bottom-2 right-2 translate-y-1 rounded-full bg-gradient-to-br px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-pop transition group-hover:translate-y-0 group-hover:opacity-100 " +
                           tabMeta.accent

@@ -67,6 +67,10 @@ export interface Dict {
   contact_email_body: string;
   footer: string;
   lang_label: string;
+  select_all: string;
+  select_none: string;
+  selected_count: (n: number, total: number) => string;
+  select_hint: string;
   // Feedback page
   fb_back: string;
   fb_page_title: string;
@@ -149,6 +153,10 @@ export const DICTS: Record<Lang, Dict> = {
     footer:
       "Please respect each platform's Terms of Service. Only download content you have the right to save.",
     lang_label: "Language",
+    select_all: "Select all",
+    select_none: "Clear",
+    selected_count: (n, total) => `${n} of ${total} selected`,
+    select_hint: "Tap an image to include or exclude it from bulk export.",
     fb_back: "← Back to home",
     fb_page_title: "Feedback",
     fb_page_subtitle:
@@ -230,6 +238,10 @@ export const DICTS: Record<Lang, Dict> = {
     footer:
       "Sila hormati Terma Perkhidmatan setiap platform. Muat turun hanya kandungan yang anda berhak simpan.",
     lang_label: "Bahasa",
+    select_all: "Pilih semua",
+    select_none: "Kosongkan",
+    selected_count: (n, total) => `${n} daripada ${total} dipilih`,
+    select_hint: "Ketuk gambar untuk sertakan atau keluarkan daripada eksport pukal.",
     fb_back: "← Kembali ke laman utama",
     fb_page_title: "Maklum balas",
     fb_page_subtitle:
@@ -310,6 +322,10 @@ export const DICTS: Record<Lang, Dict> = {
     contact_email_body: "发送邮件给我们,我们会尽快回复。",
     footer: "请遵守各平台的服务条款,只下载您有权保存的内容。",
     lang_label: "语言",
+    select_all: "全选",
+    select_none: "取消全选",
+    selected_count: (n, total) => `已选 ${n} / ${total}`,
+    select_hint: "点击图片可加入或移出批量导出。",
     fb_back: "← 返回首页",
     fb_page_title: "反馈",
     fb_page_subtitle: "告诉我们发现的问题、想要的功能,或合作想法。每一条我们都会阅读。",

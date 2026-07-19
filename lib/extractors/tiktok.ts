@@ -1,4 +1,4 @@
-import { ExtractorError, ExtractResult, decodeUnicode, normalizeUrl, UA } from "./types";
+import { ExtractorError, ExtractResult, decodeUnicode, dedupeByPath, normalizeUrl, UA } from "./types";
 import { fetchHtml } from "./http";
 
 function validate(input: string): URL {
@@ -78,5 +78,9 @@ export async function extractTiktok(rawUrl: string): Promise<ExtractResult> {
   if (!images.size && !videos.size) {
     throw new ExtractorError("No media found on this TikTok post.", 404);
   }
-  return { platform: "tiktok", images: [...images], videos: [...videos] };
+  return {
+    platform: "tiktok",
+    images: dedupeByPath([...images]),
+    videos: dedupeByPath([...videos]),
+  };
 }

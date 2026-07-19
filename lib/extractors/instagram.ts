@@ -1,4 +1,4 @@
-import { ExtractorError, ExtractResult, decodeUnicode, normalizeUrl } from "./types";
+import { ExtractorError, ExtractResult, decodeUnicode, dedupeByPath, normalizeUrl } from "./types";
 import { fetchHtml } from "./http";
 
 function validate(input: string): URL {
@@ -59,5 +59,9 @@ export async function extractInstagram(rawUrl: string): Promise<ExtractResult> {
       401,
     );
   }
-  return { platform: "instagram", images: [...images], videos: [...videos] };
+  return {
+    platform: "instagram",
+    images: dedupeByPath([...images]),
+    videos: dedupeByPath([...videos]),
+  };
 }

@@ -1,4 +1,4 @@
-import { ExtractorError, ExtractResult, decodeUnicode, normalizeUrl } from "./types";
+import { ExtractorError, ExtractResult, decodeUnicode, dedupeByPath, normalizeUrl } from "./types";
 import { fetchHtml } from "./http";
 
 function validate(input: string): URL {
@@ -65,5 +65,9 @@ export async function extractFacebook(rawUrl: string): Promise<ExtractResult> {
       401,
     );
   }
-  return { platform: "facebook", images: [...images], videos: [...videos] };
+  return {
+    platform: "facebook",
+    images: dedupeByPath([...images]),
+    videos: dedupeByPath([...videos]),
+  };
 }
