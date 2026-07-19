@@ -72,6 +72,7 @@ export interface Dict {
   selected_count: (n: number, total: number) => string;
   select_hint: string;
   download_all: string;
+  preview: string;
   // Feedback page
   fb_back: string;
   fb_page_title: string;
@@ -158,7 +159,8 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "Clear",
     selected_count: (n, total) => `${n} of ${total} selected`,
     select_hint: "Tap an image to include or exclude it from bulk export.",
-    download_all: "Download all",
+    download_all: "Download",
+    preview: "Preview",
     fb_back: "← Back to home",
     fb_page_title: "Feedback",
     fb_page_subtitle:
@@ -244,7 +246,8 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "Kosongkan",
     selected_count: (n, total) => `${n} daripada ${total} dipilih`,
     select_hint: "Ketuk gambar untuk sertakan atau keluarkan daripada eksport pukal.",
-    download_all: "Muat turun semua",
+    download_all: "Muat turun",
+    preview: "Pratonton",
     fb_back: "← Kembali ke laman utama",
     fb_page_title: "Maklum balas",
     fb_page_subtitle:
@@ -329,7 +332,8 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "取消全选",
     selected_count: (n, total) => `已选 ${n} / ${total}`,
     select_hint: "点击图片可加入或移出批量导出。",
-    download_all: "全部下载",
+    download_all: "下载",
+    preview: "预览",
     fb_back: "← 返回首页",
     fb_page_title: "反馈",
     fb_page_subtitle: "告诉我们发现的问题、想要的功能,或合作想法。每一条我们都会阅读。",

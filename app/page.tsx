@@ -82,6 +82,7 @@ function proxied(url: string, download = false, filename?: string) {
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
   const [langOpen, setLangOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [active, setActive] = useState<Platform>("xhs");
   const [tabs, setTabs] = useState<Record<Platform, TabState>>({
     xhs: { ...initialTabState, selected: new Set() },
@@ -99,6 +100,27 @@ export default function Home() {
     if (typeof window !== "undefined") localStorage.setItem("lang", lang);
     if (typeof document !== "undefined") document.documentElement.lang = lang;
   }, [lang]);
+
+  useEffect(() => {
+    if (previewIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPreviewIndex(null);
+      else if (e.key === "ArrowLeft") setPreviewIndex((i) => stepIndex(i, -1));
+      else if (e.key === "ArrowRight") setPreviewIndex((i) => stepIndex(i, 1));
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewIndex, active, tabs]);
+
+  function stepIndex(i: number | null, delta: number): number | null {
+    if (i === null) return null;
+    const total = tabs[active].images.length;
+    if (!total) return null;
+    const next = i + delta;
+    if (next < 0 || next >= total) return i;
+    return next;
+  }
 
   const t = DICTS[lang];
   const state = tabs[active];
@@ -225,6 +247,90 @@ export default function Home() {
 
   return (
     <div onClick={() => langOpen && setLangOpen(false)}>
+      {/* Preview lightbox */}
+      {previewIndex !== null && state.images[previewIndex] && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setPreviewIndex(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
+        >
+          {/* Counter pill (top-center) */}
+          <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-full bg-white/95 px-4 py-1.5 text-sm font-semibold text-slate-800 shadow-pop">
+            {previewIndex + 1} / {state.images.length}
+          </div>
+
+          {/* Close */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewIndex(null);
+            }}
+            aria-label="Close"
+            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-lg font-semibold text-slate-700 shadow-pop transition hover:bg-slate-100"
+          >
+            ✕
+          </button>
+
+          {/* Prev */}
+          {previewIndex > 0 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewIndex((i) => stepIndex(i, -1));
+              }}
+              aria-label="Previous"
+              className="absolute left-4 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-semibold text-slate-700 shadow-pop transition hover:bg-slate-100 sm:h-14 sm:w-14"
+            >
+              ‹
+            </button>
+          )}
+
+          {/* Next */}
+          {previewIndex < state.images.length - 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewIndex((i) => stepIndex(i, 1));
+              }}
+              aria-label="Next"
+              className="absolute right-4 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-semibold text-slate-700 shadow-pop transition hover:bg-slate-100 sm:h-14 sm:w-14"
+            >
+              ›
+            </button>
+          )}
+
+          <div
+            className="relative max-h-[92vh] max-w-[92vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={proxied(state.images[previewIndex])}
+              alt={`Preview ${previewIndex + 1}`}
+              className="max-h-[92vh] max-w-[92vw] rounded-2xl bg-white object-contain shadow-pop"
+            />
+            <a
+              href={proxied(
+                state.images[previewIndex],
+                true,
+                `${active}-image-${previewIndex + 1}.jpg`,
+              )}
+              download={`${active}-image-${previewIndex + 1}.jpg`}
+              className={
+                "absolute bottom-3 right-3 rounded-full bg-gradient-to-br px-4 py-2 text-sm font-semibold text-white shadow-pop " +
+                tabMeta.accent
+              }
+            >
+              {t.save}
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-6">
         <div className="flex items-center gap-2">
@@ -475,7 +581,7 @@ export default function Home() {
                       {t.select_none}
                     </button>
                     <span className="mx-1 h-5 w-px bg-slate-200" aria-hidden />
-                    {state.selected.size >= 2 && (
+                    {state.selected.size >= 1 && (
                       <button
                         onClick={handleDownloadAll}
                         disabled={busy}
@@ -548,17 +654,29 @@ export default function Home() {
                           ✓
                         </span>
                       )}
-                      <a
-                        href={proxied(src, true, filename)}
-                        download={filename}
-                        onClick={(e) => e.stopPropagation()}
-                        className={
-                          "absolute bottom-2 right-2 translate-y-1 rounded-full bg-gradient-to-br px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-pop transition group-hover:translate-y-0 group-hover:opacity-100 " +
-                          tabMeta.accent
-                        }
-                      >
-                        {t.save}
-                      </a>
+                      <div className="absolute bottom-2 right-2 flex translate-y-1 gap-1.5 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewIndex(i);
+                          }}
+                          className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow-pop ring-1 ring-slate-200 hover:bg-white"
+                        >
+                          👁 {t.preview}
+                        </button>
+                        <a
+                          href={proxied(src, true, filename)}
+                          download={filename}
+                          onClick={(e) => e.stopPropagation()}
+                          className={
+                            "rounded-full bg-gradient-to-br px-3 py-1 text-xs font-semibold text-white shadow-pop " +
+                            tabMeta.accent
+                          }
+                        >
+                          {t.save}
+                        </a>
+                      </div>
                     </div>
                   );
                 })}
