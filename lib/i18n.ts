@@ -276,9 +276,9 @@ export const DICTS: Record<Lang, Dict> = {
     nav_how: "使用方法",
     nav_contact: "联系我们",
     hero_badge: "免登录 · 无水印 · 免费",
-    hero_title_a: "一键把任意帖子保存为 ",
+    hero_title_a: "把帖子存为",
     hero_title_highlight: "图片或视频",
-    hero_title_b: "。",
+    hero_title_b: "",
     hero_subtitle:
       "粘贴小红书或 TikTok 链接 —— 预览后可下载为 ZIP、PDF、长图或 MP4。",
     paste: "粘贴",

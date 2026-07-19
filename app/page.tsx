@@ -298,7 +298,13 @@ export default function Home() {
         </span>
         <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
           {t.hero_title_a}
-          <span className="text-gradient">{t.hero_title_highlight}</span>
+          <span
+            className={
+              "text-gradient" + (lang === "zh" ? " whitespace-nowrap" : "")
+            }
+          >
+            {t.hero_title_highlight}
+          </span>
           {t.hero_title_b}
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-base text-slate-600 sm:text-lg">
