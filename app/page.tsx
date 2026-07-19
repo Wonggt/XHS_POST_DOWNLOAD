@@ -34,17 +34,6 @@ const TABS: Tab[] = [
     ring: "focus:ring-rose-300",
   },
   {
-    id: "instagram",
-    label: "Instagram",
-    emoji: "📸",
-    placeholder: "https://www.instagram.com/p/… or /reel/…",
-    supportsBulk: true,
-    hintKey: "hint_ig",
-    accent: "from-fuchsia-500 via-pink-500 to-orange-400",
-    accentSoft: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-200",
-    ring: "focus:ring-fuchsia-300",
-  },
-  {
     id: "tiktok",
     label: "TikTok",
     emoji: "🎵",
@@ -54,17 +43,6 @@ const TABS: Tab[] = [
     accent: "from-slate-800 via-slate-700 to-cyan-500",
     accentSoft: "bg-slate-100 text-slate-800 ring-slate-300",
     ring: "focus:ring-cyan-300",
-  },
-  {
-    id: "facebook",
-    label: "Facebook",
-    emoji: "👍",
-    placeholder: "https://www.facebook.com/… or fb.watch/…",
-    supportsBulk: true,
-    hintKey: "hint_fb",
-    accent: "from-blue-600 to-sky-400",
-    accentSoft: "bg-blue-50 text-blue-700 ring-blue-200",
-    ring: "focus:ring-blue-300",
   },
 ];
 
@@ -110,7 +88,7 @@ export default function Home() {
     instagram: { ...initialTabState, selected: new Set() },
     tiktok: { ...initialTabState, selected: new Set() },
     facebook: { ...initialTabState, selected: new Set() },
-  });
+  } as Record<Platform, TabState>);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("lang") : null;
@@ -196,6 +174,23 @@ export default function Home() {
         error: err instanceof Error ? err.message : "Unknown error",
         busyKind: null,
       });
+    }
+  }
+
+  async function handleDownloadAll() {
+    const chosen = state.images.filter((i) => state.selected.has(i));
+    if (!chosen.length) return;
+    for (let i = 0; i < chosen.length; i++) {
+      const src = chosen[i];
+      const filename = `${active}-image-${i + 1}.jpg`;
+      const a = document.createElement("a");
+      a.href = `/api/proxy?url=${encodeURIComponent(src)}&download=1&filename=${encodeURIComponent(filename)}`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Small stagger so browsers don't collapse the downloads
+      await new Promise((r) => setTimeout(r, 250));
     }
   }
 
@@ -316,7 +311,7 @@ export default function Home() {
         <div className="glass rounded-3xl p-4 shadow-soft ring-1 ring-white/60 sm:p-6">
           <div
             role="tablist"
-            className="mb-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-100/70 p-1.5 sm:grid-cols-4"
+            className="mb-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-100/70 p-1.5"
           >
             {TABS.map((tab) => {
               const isActive = active === tab.id;
@@ -474,6 +469,19 @@ export default function Home() {
                       {t.select_none}
                     </button>
                     <span className="mx-1 h-5 w-px bg-slate-200" aria-hidden />
+                    {state.selected.size >= 2 && (
+                      <button
+                        onClick={handleDownloadAll}
+                        disabled={busy}
+                        className={
+                          "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br px-4 py-2 text-sm font-semibold text-white shadow-pop transition hover:brightness-110 disabled:opacity-40 " +
+                          tabMeta.accent
+                        }
+                      >
+                        <span>⬇️</span>
+                        {t.download_all}
+                      </button>
+                    )}
                     {(Object.keys(BULK_META) as BulkKind[]).map((kind) => (
                       <button
                         key={kind}

@@ -71,6 +71,7 @@ export interface Dict {
   select_none: string;
   selected_count: (n: number, total: number) => string;
   select_hint: string;
+  download_all: string;
   // Feedback page
   fb_back: string;
   fb_page_title: string;
@@ -107,7 +108,7 @@ export const DICTS: Record<Lang, Dict> = {
     hero_title_highlight: "photos or video",
     hero_title_b: " in one click.",
     hero_subtitle:
-      "Paste a link from Xiaohongshu, Instagram, TikTok, or Facebook — preview, then download as ZIP, PDF, long image, or MP4.",
+      "Paste a Xiaohongshu or TikTok link — preview, then download as ZIP, PDF, long image, or MP4.",
     paste: "Paste",
     clear: "Clear",
     grab: "Grab it →",
@@ -157,6 +158,7 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "Clear",
     selected_count: (n, total) => `${n} of ${total} selected`,
     select_hint: "Tap an image to include or exclude it from bulk export.",
+    download_all: "Download all",
     fb_back: "← Back to home",
     fb_page_title: "Feedback",
     fb_page_subtitle:
@@ -192,7 +194,7 @@ export const DICTS: Record<Lang, Dict> = {
     hero_title_highlight: "foto atau video",
     hero_title_b: " dengan satu klik.",
     hero_subtitle:
-      "Tampal pautan dari Xiaohongshu, Instagram, TikTok atau Facebook — pratonton, kemudian muat turun sebagai ZIP, PDF, gambar panjang atau MP4.",
+      "Tampal pautan Xiaohongshu atau TikTok — pratonton, kemudian muat turun sebagai ZIP, PDF, gambar panjang atau MP4.",
     paste: "Tampal",
     clear: "Padam",
     grab: "Ambil →",
@@ -242,6 +244,7 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "Kosongkan",
     selected_count: (n, total) => `${n} daripada ${total} dipilih`,
     select_hint: "Ketuk gambar untuk sertakan atau keluarkan daripada eksport pukal.",
+    download_all: "Muat turun semua",
     fb_back: "← Kembali ke laman utama",
     fb_page_title: "Maklum balas",
     fb_page_subtitle:
@@ -277,7 +280,7 @@ export const DICTS: Record<Lang, Dict> = {
     hero_title_highlight: "图片或视频",
     hero_title_b: "。",
     hero_subtitle:
-      "粘贴小红书、Instagram、TikTok 或 Facebook 的链接 —— 预览后可下载为 ZIP、PDF、长图或 MP4。",
+      "粘贴小红书或 TikTok 链接 —— 预览后可下载为 ZIP、PDF、长图或 MP4。",
     paste: "粘贴",
     clear: "清除",
     grab: "立即解析 →",
@@ -326,6 +329,7 @@ export const DICTS: Record<Lang, Dict> = {
     select_none: "取消全选",
     selected_count: (n, total) => `已选 ${n} / ${total}`,
     select_hint: "点击图片可加入或移出批量导出。",
+    download_all: "全部下载",
     fb_back: "← 返回首页",
     fb_page_title: "反馈",
     fb_page_subtitle: "告诉我们发现的问题、想要的功能,或合作想法。每一条我们都会阅读。",
