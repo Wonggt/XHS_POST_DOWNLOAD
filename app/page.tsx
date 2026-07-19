@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CONTACT, DICTS, LANGS, type Lang } from "@/lib/i18n";
 import { LogoMark } from "@/components/Logo";
@@ -120,6 +120,31 @@ export default function Home() {
     const next = i + delta;
     if (next < 0 || next >= total) return i;
     return next;
+  }
+
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const swipedRef = useRef(false);
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+    swipedRef.current = false;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (!touchStart.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    touchStart.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    swipedRef.current = true;
+    setPreviewIndex((i) => stepIndex(i, dx < 0 ? 1 : -1));
+  }
+  function onBackdropClick() {
+    if (swipedRef.current) {
+      swipedRef.current = false;
+      return;
+    }
+    setPreviewIndex(null);
   }
 
   const t = DICTS[lang];
@@ -252,8 +277,10 @@ export default function Home() {
         <div
           role="dialog"
           aria-modal="true"
-          onClick={() => setPreviewIndex(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
+          onClick={onBackdropClick}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className="fixed inset-0 z-50 flex touch-pan-y items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
         >
           {/* Counter pill (top-center) */}
           <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-full bg-white/95 px-4 py-1.5 text-sm font-semibold text-slate-800 shadow-pop">
