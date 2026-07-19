@@ -7,9 +7,9 @@ export const LANGS: { code: Lang; label: string; short: string }[] = [
 ];
 
 export const CONTACT = {
-  telegram: "https://t.me/telgoodyes",
+  telegram: "https://t.me/grabit0101",
   feedbackUrl: "/feedback",
-  email: "kukutool8@gmail.com",
+  email: "grabit0101@gmail.com",
 };
 
 export type FeedbackCategory = "collaboration" | "feature" | "bug" | "other";
